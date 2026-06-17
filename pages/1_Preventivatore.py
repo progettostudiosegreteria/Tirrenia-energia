@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Recupero della chiave API caricata dal file .env locale
-API_KEY_LOCALE = os.environ.get("GEMINI_API_KEY", "")
+API_KEY_LOCALE = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw")
 
 # ==========================================
 # 1. INIZIALIZZAZIONE DEI LISTINI MENSILI E INDICI
