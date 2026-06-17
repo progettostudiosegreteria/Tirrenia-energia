@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tirrenia Energia - Risparmia sulla tua bolletta</title>
+    <!-- Carichiamo il font moderno Plus Jakarta Sans da Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <!-- Carichiamo Tailwind CSS per lo stile grafico -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Applichiamo il nuovo font a tutto il sito */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#06070a] text-white font-sans antialiased relative overflow-x-hidden min-h-screen">
+
+    <!-- SFONDO EFFETTO LUCE/BAGLIORE (Effetto Premium e Accattivante) -->
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-orange-500/10 blur-[120px] pointer-events-none z-0"></div>
+    <div class="absolute top-[20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-blue-500/10 blur-[150px] pointer-events-none z-0"></div>
+
+    <!-- 1. BARRA DI NAVIGAZIONE (HEADER) -->
+    <header class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between border-b border-gray-900/60 relative z-10">
+        <!-- Logo temporaneo testuale -->
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-wider text-white">TIRRENIA<span class="text-[#f28e2b]">ENERGIA</span></span>
+        </div>
+        
+        <!-- Menu Centrale -->
+        <nav class="hidden md:flex space-x-8 text-sm font-semibold text-gray-400">
+            <a href="#" class="hover:text-white transition">Home</a>
+            <a href="#" class="hover:text-white transition">Offerte</a>
+            <a href="#" class="hover:text-white transition">Preventivatore AI</a>
+            <a href="#" class="hover:text-white transition">Chi Siamo</a>
+            <a href="#" class="hover:text-white transition">Contatti</a>
+        </nav>
+
+        <!-- Pulsanti a Destra -->
+        <div class="flex items-center space-x-6">
+            <a href="tel:0818242528" class="hidden lg:flex items-center text-sm font-semibold text-gray-400 hover:text-white">
+                <svg class="w-4 h-4 mr-2 text-[#f28e2b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                081 8242528
+            </a>
+            <button class="bg-[#f28e2b] hover:bg-[#d97713] text-black font-bold text-sm px-5 py-2.5 rounded-full transition shadow-lg shadow-orange-500/20">
+                Calcola Risparmio
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. SEZIONE PRINCIPALE (HERO SECTION) -->
+    <main class="max-w-7xl mx-auto px-6 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        
+        <!-- Blocco Sinistro: Testi e Pulsanti -->
+        <div class="lg:col-span-7 space-y-6">
+            <div class="inline-flex items-center space-x-2 bg-gray-900/80 border border-gray-800 px-4 py-1.5 rounded-full text-xs font-semibold text-gray-400 backdrop-blur-sm">
+                <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                <span>Mercato Libero Luce e Gas</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+                Risparmia sulla tua <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#f28e2b] via-orange-400 to-yellow-500">bolletta luce e gas</span>
+            </h1>
+            
+            <p class="text-gray-400 text-lg max-w-xl font-medium">
+                Carica la tua bolletta, la nostra AI estrae automaticamente tutti i dati e calcola quanto puoi risparmiare passando a Tirrenia Energia.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <button class="bg-[#f28e2b] hover:bg-[#d97713] text-black font-bold px-8 py-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-xl shadow-orange-500/20">
+                    <span>Calcola il tuo risparmio</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+                <button class="bg-transparent hover:bg-gray-900 border border-gray-700 text-white font-semibold px-8 py-4 rounded-xl transition">
+                    Scopri le offerte
+                </button>
+            </div>
+
+            <!-- Vantaggi rapidi sotto i pulsanti -->
+            <div class="pt-8 space-y-3 sm:space-y-0 sm:flex sm:space-x-8 text-sm text-gray-400 font-medium">
+                <div class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Nessun costo di attivazione</div>
+                <div class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Preventivo gratuito in 2 minuti</div>
+                <div class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Cambio fornitore senza interruzioni</div>
+            </div>
+        </div>
+
+        <!-- Blocco Destro: Informazioni Aziendali con Sfondo Immagine (ispirato a Massimo 11111.jpg) -->
+        <div class="lg:col-span-5 relative overflow-hidden rounded-3xl shadow-2xl border border-gray-800/80 bg-cover bg-center min-h-[550px] flex flex-col justify-between p-8 backdrop-blur-sm" style="background-image: url('https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80');">
+            
+            <!-- Velo Scuro Semitrasparente per garantire una leggibilità perfetta del testo -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/90 via-black/85 to-black/95 z-0"></div>
+
+            <!-- Contenuto del Blocco (Sopra il velo scuro) -->
+            <div class="relative z-10 space-y-5">
+                <!-- Intestazione del riquadro -->
+                <div class="flex items-center space-x-3 pb-3 border-b border-gray-800/60">
+                    <div class="bg-orange-500/10 p-2 rounded-xl border border-orange-500/20">
+                        <svg class="w-5 h-5 text-[#f28e2b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Chi Siamo & Partnership</h3>
+                    </div>
+                </div>
+
+                <!-- Testi estratti da Massimo 11111.jpg -->
+                <div class="space-y-4 text-sm text-gray-300 leading-relaxed font-medium">
+                    <p>
+                        <strong class="text-white font-semibold">Tirrenia Energia</strong> opera nel settore della vendita di <span class="text-blue-400 font-semibold">gas naturale</span> e di <span class="text-blue-400 font-semibold">energia elettrica</span> in ambito nazionale.
+                    </p>
+                    
+                    <p>
+                        L'impegno di Tirrenia Energia è porre <em class="text-white font-semibold not-italic">"le persone"</em> e non <em class="text-white font-semibold not-italic">"i numeri"</em> al centro del proprio business garantendo <strong class="text-[#f28e2b] font-bold">assistenza, consulenza e gestione delle forniture</strong>.
+                    </p>
+                    
+                    <p>
+                        Per Tirrenia Energia sei importante, la nostra passione è al tuo servizio per offrirti le migliori soluzioni per la tua casa e il tuo lavoro.
+                    </p>
+                </div>
+
+                <!-- Testo di Integrazione sul Territorio e Studio Lauri modificato -->
+                <div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 text-xs text-gray-300 leading-relaxed space-y-2 backdrop-blur-md">
+                    <p>
+                        <span class="text-[#f28e2b] font-bold uppercase tracking-wider block mb-1 text-[10px]">Presidio Territoriale Campania</span>
+                        Tirrenia Energia è partner dello <strong class="text-white font-bold">Studio Lauri</strong> con sede in <span class="text-white font-medium">Palma Campania (NA) 80036, Via Circumvallazione 170</span>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Box Recapiti e Contatti in Basso -->
+            <div class="relative z-10 mt-6 pt-4 border-t border-gray-800/60 space-y-3">
+                <p class="text-xs text-gray-400 font-semibold">Per maggiori informazioni e contrattualizzazione chiamaci:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href="tel:0818242528" class="flex items-center space-x-2 bg-gray-950/90 hover:bg-gray-900 border border-gray-800 p-2.5 rounded-xl transition">
+                        <span class="bg-gray-900 p-1 rounded-md text-[#f28e2b]">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        </span>
+                        <div class="text-left">
+                            <p class="text-[9px] text-gray-500 font-bold uppercase">Fisso</p>
+                            <p class="text-xs font-bold text-white">081 8242528</p>
+                        </div>
+                    </a>
+                    <a href="tel:3517649350" class="flex items-center space-x-2 bg-gray-950/90 hover:bg-gray-900 border border-gray-800 p-2.5 rounded-xl transition">
+                        <span class="bg-gray-900 p-1 rounded-md text-green-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </span>
+                        <div class="text-left">
+                            <p class="text-[9px] text-gray-500 font-bold uppercase">Cellulare</p>
+                            <p class="text-xs font-bold text-white">351 764 9350</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>
