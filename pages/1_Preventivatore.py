@@ -106,14 +106,13 @@ if uploaded_file is not None:
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         with st.spinner("L'AI sta analizzando i testi..."):
             try:
-                # Utilizziamo la libreria standard preinstallata su Streamlit
+                # Corretto l'import rimuovendo il refuso ortografico
                 import google.generativeai as generative_ai
                 
                 generative_ai.configure(api_key=API_KEY_LOCALE)
                 
                 bytes_data = uploaded_file.getvalue()
                 
-                # Configurazione del file in input
                 file_part = {
                     "mime_type": uploaded_file.type,
                     "data": bytes_data
