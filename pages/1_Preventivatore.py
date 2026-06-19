@@ -1,13 +1,9 @@
 import streamlit as st
 import json
 import os
-from dotenv import load_dotenv
 
-# Carica automaticamente la chiave dal file .env se presente
-load_dotenv()
-
-# Recupero della chiave API caricata dal file .env locale
-API_KEY_LOCALE = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw")
+# Recupero della chiave API cablata direttamente per il funzionamento online su Streamlit Cloud
+API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
 
 # ==========================================
 # 1. INIZIALIZZAZIONE DEI LISTINI MENSILI E INDICI
@@ -110,7 +106,7 @@ if uploaded_file is not None:
     
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         if API_KEY_LOCALE == "":
-            st.error("⚠️ Chiave API non trovata nel file .env. Assicurati di aver configurato il file .env correttamente in VS Code.")
+            st.error("⚠️ Chiave API non configurata correttamente nel file.")
         else:
             with st.spinner("L'AI sta analizzando i testi e isolando le spese fisse invariabili..."):
                 try:
@@ -173,7 +169,7 @@ if uploaded_file is not None:
             st.markdown("---")
             st.markdown("**🛠️ Spese Passanti e Imposte (Prelevate pari pari dalla bolletta):**")
             c_trasporto = st.number_input("Spesa per il Trasporto e Gestione Contatore (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
-            c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
+            c_oneri = st.number_input("Spesa per Oneri di Systema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
             c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
             c_rai = st.number_input("Canone RAI (€):", value=float(st.session_state.dati_bolletta.get("canone_rai", 0.0)))
             c_bonus = st.number_input("Bonus Sociale (Inserisci come valore NEGATIVO se presente) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
@@ -217,7 +213,7 @@ if uploaded_file is not None:
                 imponibile_fix = spesa_energia_fix + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
                 totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
                 
-                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luvar_au_f3"]) * coeff_perdite) if 'luvar_au_f3' in st.session_state.listino else (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_au_f3"]) * coeff_perdite)
+                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_au_f3"]) * coeff_perdite)
                 imponibile_var = spesa_energia_var + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
                 totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
             else:
@@ -251,14 +247,14 @@ if uploaded_file is not None:
         
         b1, b2 = st.columns(2)
         with b1:
-            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #f28e2b;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO FISFO</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_fissa:.2f}</span></div>", unsafe_allow_html=True)
-            st.metric("Risparmio Fisfo", f"€ {spesa_attuale - totale_fissa:.2f}")
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #f28e2b;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO FISSO</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_fissa:.2f}</span></div>", unsafe_allow_html=True)
+            st.metric("Risparmio Fisso", f"€ {spesa_attuale - totale_fissa:.2f}")
         with b2:
-            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #10b981;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO VARI_ABILE</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_variabile:.2f}</span></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #10b981;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO VARIABILE</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_variabile:.2f}</span></div>", unsafe_allow_html=True)
             st.metric("Risparmio Variabile", f"€ {spesa_attuale - totale_variabile:.2f}")
 
         miglior_risparmio = max(spesa_attuale - totale_fissa, spesa_attuale - totale_variabile)
-        tipo_migliore = "VARI_ABILE" if (spesa_attuale - totale_variabile) > (spesa_attuale - totale_fissa) else "FISFO"
+        tipo_migliore = "VARIABILE" if (spesa_attuale - totale_variabile) > (spesa_attuale - totale_fissa) else "FISSO"
         st.markdown(f"<div style='background-color: #064e3b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #10b981; margin-top: 25px;'><span style='color: #a7f3d0; font-size: 13px; font-weight: bold;'>MIGLIOR OPZIONE CONVENIENZA (TIRRENIA {tipo_migliore})</span><br><span style='color: #34d399; font-size: 34px; font-weight: 900;'>€ {miglior_risparmio:.2f} Totali di Risparmio</span></div>", unsafe_allow_html=True)
 else:
     st.info("📂 Carica una bolletta per attivare l'estrazione intelligente e il motore di calcolo.")
