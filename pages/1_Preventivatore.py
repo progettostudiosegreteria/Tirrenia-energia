@@ -169,7 +169,7 @@ if uploaded_file is not None:
             st.markdown("---")
             st.markdown("**🛠️ Spese Passanti e Imposte (Prelevate pari pari dalla bolletta):**")
             c_trasporto = st.number_input("Spesa per il Trasporto e Gestione Contatore (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
-            c_oneri = st.number_input("Spesa per Oneri di Systema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
+            c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
             c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
             c_rai = st.number_input("Canone RAI (€):", value=float(st.session_state.dati_bolletta.get("canone_rai", 0.0)))
             c_bonus = st.number_input("Bonus Sociale (Inserisci come valore NEGATIVO se presente) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
