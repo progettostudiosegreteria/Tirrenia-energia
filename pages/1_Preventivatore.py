@@ -5,9 +5,9 @@ import requests
 import base64
 
 # ==========================================
-# CHIAVE API CORRETTA E DIRETTA
+# AQ.Ab8RN6JreUV6T2o56T-V74VqwLQFlCbiROQdIzShyvrWJ2BuSw
 # ==========================================
-API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
+API_KEY_LOCALE = "AQ.Ab8RN6JreUV6T2o56T-V74VqwLQFlCbiROQdIzShyvrWJ2BuSw"
 
 # ==========================================
 # INIZIALIZZAZIONE STATO E LISTINI
@@ -27,7 +27,30 @@ if "listino" not in st.session_state:
     }
 
 if "prompt_ai" not in st.session_state:
-    st.session_state.prompt_ai = "Sei un analista esperto di bollette energetiche per lo Studio Lauri. Analizza il documento ed estrai i consumi e le spese fisse. Restituisci prima un blocco JSON racchiuso tra [JSON_START] e [JSON_END] con chiavi: fornitura, destinazione, spesa_attuale, f1, f2, f3, spesa_trasporto, oneri_sistema, altre_partite, canone_rai, bonus_sociale. Dopo il JSON aggiungi un report testuale dettagliato."
+    st.session_state.prompt_ai = """Sei un analista esperto di bollette energetiche italiane per lo Studio Lauri e Tirrenia Energia. Analizza il documento ed estrai con cura sia i consumi sia tutte le componenti di spesa fisse passanti.
+
+DEVI RESTITUIRMI UN OUTPUT FORMATTATO IN DUE PARTI PRECISE:
+
+PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura:
+[JSON_START]
+{
+  "fornitura": "LUCE",
+  "destinazione": "Usi Domestici",
+  "spesa_attuale": 0.00,
+  "f1": 0,
+  "f2": 0,
+  "f3": 0,
+  "spesa_trasporto": 0.00,
+  "oneri_sistema": 0.00,
+  "altre_partite": 0.00,
+  "canone_rai": 0.00,
+  "bonus_sociale": 0.00
+}
+[JSON_END]
+
+PARTE 2: Una descrizione testuale dettagliata (Report) che riassuma:
+- Nome del vecchio gestore e periodo di riferimento.
+- Come hai individuato le singole voci di spesa fisse passanti e i consumi."""
 
 if "report_testuale" not in st.session_state:
     st.session_state.report_testuale = ""
@@ -83,6 +106,7 @@ if uploaded_file is not None:
                 bytes_data = uploaded_file.getvalue()
                 base64_file = base64.b64encode(bytes_data).decode("utf-8")
                 
+                # Chiamata REST standard corretta per v1beta
                 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
                 headers = {"Content-Type": "application/json"}
                 params = {"key": API_KEY_LOCALE}
@@ -108,6 +132,7 @@ if uploaded_file is not None:
                 
                 if "error" in res_json:
                     st.error(f"Errore diretto da Google API: {res_json['error']['message']}")
+                    st.json(res_json["error"])
                 else:
                     full_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
                     
@@ -118,7 +143,6 @@ if uploaded_file is not None:
                         json_part = full_text
                         report_part = "Report generato direttamente."
                     
-                    json_part = json_part.replace("'", '"')
                     risultato_json = json.loads(json_part)
                     st.session_state.dati_bolletta.update(risultato_json)
                     st.session_state.report_testuale = full_text if report_part == "" else report_part
