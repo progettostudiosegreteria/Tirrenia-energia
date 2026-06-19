@@ -27,30 +27,7 @@ if "listino" not in st.session_state:
     }
 
 if "prompt_ai" not in st.session_state:
-    st.session_state.prompt_ai = (
-        "Sei un analista esperto di bollette energetiche italiane per lo Studio Lauri e Tirrenia Energia. "
-        "Analizza il documento ed estrai con cura sia i consumi sia tutte le componenti di spesa fisse passanti. "
-        "DEVI RESTITUIRMI UN OUTPUT FORMATTATO IN DUE PARTI PRECISE: "
-        "PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura: "
-        "[JSON_START] "
-        "{"
-        "  'fornitura': 'LUCE' o 'GAS',"
-        "  'destinazione': 'Usi Domestici' o 'Altri Usi',"
-        "  'spesa_attuale': 0.00,"
-        "  'f1': 0,"
-        "  'f2': 0,"
-        "  'f3': 0,"
-        "  'spesa_trasporto': 0.00,"
-        "  'oneri_sistema': 0.00,"
-        "  'altre_partite': 0.00,"
-        "  'canone_rai': 0.00,"
-        "  'bonus_sociale': 0.00"
-        "} "
-        "[JSON_END] "
-        "PARTE 2: Una descrizione testuale dettagliata (Report) che riassuma: "
-        "- Nome del vecchio gestore e periodo di riferimento. "
-        "- Come hai individuato le singole voci di spesa fisse passanti e i consumi."
-    )
+    st.session_state.prompt_ai = "Sei un analista esperto di bollette energetiche per lo Studio Lauri. Analizza il documento ed estrai i consumi e le spese fisse. Restituisci prima un blocco JSON racchiuso tra [JSON_START] e [JSON_END] con chiavi: fornitura, destinazione, spesa_attuale, f1, f2, f3, spesa_trasporto, oneri_sistema, altre_partite, canone_rai, bonus_sociale. Dopo il JSON aggiungi un report testuale dettagliato."
 
 if "report_testuale" not in st.session_state:
     st.session_state.report_testuale = ""
@@ -216,4 +193,48 @@ if uploaded_file is not None:
                 imponibile_fix = spesa_energia_fix + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
                 totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
                 
-                spesa_energia_var = (f1_consumo *
+                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_au_f3"]) * coeff_perdite)
+                imponibile_var = spesa_energia_var + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
+            else:
+                spesa_energia_fix = (f1_consumo * st.session_state.listino["luce_fix_dom_f1"] * coeff_perdite) + (f2_consumo * st.session_state.listino["luce_fix_dom_f2"] * coeff_perdite) + (f3_consumo * st.session_state.listino["luce_fix_dom_f3"] * coeff_perdite)
+                imponibile_fix = spesa_energia_fix + st.session_state.listino["luce_pcv_dom"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
+                
+                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f3"]) * coeff_perdite)
+                imponibile_var = spesa_energia_var + st.session_state.listino["luce_pcv_dom"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
+        else:
+            if tipo_uso == "Altri Usi":
+                spesa_gas_fix = consumo_totale * st.session_state.listino["gas_fix_au"]
+                imponibile_fix = spesa_gas_fix + st.session_state.listino["gas_qvd_au"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_bonus
+                
+                spesa_gas_var = consumo_totale * (psbil_valore + st.session_state.listino["gas_var_au_spread"])
+                imponibile_var = spesa_gas_var + st.session_state.listino["gas_qvd_au"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_bonus
+            else:
+                spesa_gas_fix = consumo_totale * st.session_state.listino["gas_fix_dom"]
+                imponibile_fix = spesa_gas_fix + st.session_state.listino["gas_qvd_dom"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_bonus
+                
+                spesa_gas_var = consumo_totale * (psbil_valore + st.session_state.listino["gas_var_dom_spread"])
+                imponibile_var = spesa_gas_var + st.session_state.listino["gas_qvd_dom"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_bonus
+
+        st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ef4444;'><span style='color: #9ca3af; font-size: 12px;'>VECCHIO GESTORE IN BOLLETTA</span><br><span style='color: #ef4444; font-size: 24px; font-weight: bold;'>€ {spesa_attuale:.2f}</span></div>", unsafe_allow_html=True)
+        
+        b1, b2 = st.columns(2)
+        with b1:
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #f28e2b;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO FISSO</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_fissa:.2f}</span></div>", unsafe_allow_html=True)
+            st.metric("Risparmio Fisso", f"€ {spesa_attuale - totale_fissa:.2f}")
+        with b2:
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #10b981;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO VARIABILE</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_variabile:.2f}</span></div>", unsafe_allow_html=True)
+            st.metric("Risparmio Variabile", f"€ {spesa_attuale - totale_variabile:.2f}")
+
+        miglior_risparmio = max(spesa_attuale - totale_fissa, spesa_attuale - totale_variabile)
+        tipo_migliore = "VARIABILE" if (spesa_attuale - totale_variabile) > (spesa_attuale - totale_fissa) else "FISSO"
+        
+        st.markdown(f"<div style='background-color: #064e3b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #10b981; margin-top: 25px;'><span style='color: #a7f3d0; font-size: 13px; font-weight: bold;'>MIGLIOR OPZIONE CONVENIENZA (TIRRENIA {tipo_migliore})</span><br><span style='color: #34d399; font-size: 34px; font-weight: 900;'>€ {miglior_risparmio:.2f} Totali di Risparmio</span></div>", unsafe_allow_html=True)
+else:
+    st.info("📂 Carica una bolletta per attivare l'estrazione intelligente e il motore di calcolo.")
