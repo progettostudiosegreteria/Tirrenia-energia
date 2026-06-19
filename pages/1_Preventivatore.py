@@ -106,20 +106,21 @@ if uploaded_file is not None:
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         with st.spinner("L'AI sta analizzando i testi..."):
             try:
-                # MODIFICA DI SICUREZZA: Importiamo direttamente google_genai per evitare conflitti di nomi sul server
-                import google_genai
-                from google_genai import types
+                # Utilizziamo la libreria standard preinstallata su Streamlit
+                import google.generativeai as generative_ai
                 
-                client = google_genai.Client(api_key=API_KEY_LOCALE)
+                generative_ai.configure(api_key=API_KEY_LOCALE)
+                
                 bytes_data = uploaded_file.getvalue()
                 
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=[
-                        types.Part.from_bytes(data=bytes_data, mime_type=uploaded_file.type),
-                        st.session_state.prompt_ai
-                    ]
-                )
+                # Configurazione del file in input
+                file_part = {
+                    "mime_type": uploaded_file.type,
+                    "data": bytes_data
+                }
+                
+                model = generative_ai.GenerativeModel('gemini-1.5-flash')
+                response = model.generate_content([file_part, st.session_state.prompt_ai])
                 
                 full_text = response.text
                 if "[JSON_START]" in full_text and "[JSON_END]" in full_text:
