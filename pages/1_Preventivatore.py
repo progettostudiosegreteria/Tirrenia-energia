@@ -5,12 +5,9 @@ import requests
 import base64
 
 # ==========================================
-# CHIAVE API - RECUPERO SICURO DA SECRETS
+# CHIAVE API INSERITA DIRETTAMENTE NEL CODICE
 # ==========================================
-if "GEMINI_API_KEY" in st.secrets:
-    API_KEY_LOCALE = st.secrets["GEMINI_API_KEY"]
-else:
-    API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
+API_KEY_LOCALE = "AIzaSyAz_Your_Actual_Key_Here"  # <-- INCOLLA QUI LA TUA CHIAVE REALE TRA I DUE APICI
 
 # ==========================================
 # INIZIALIZZAZIONE STATO E LISTINI
@@ -144,88 +141,5 @@ if uploaded_file is not None:
                         json_part = full_text
                         report_part = "Report generato direttamente."
                     
-                    # Pulizia stringa da eventuali apici singoli usati dall'AI
                     json_part = json_part.replace("'", '"')
-                    risultato_json = json.loads(json_part)
-                    st.session_state.dati_bolletta.update(risultato_json)
-                    st.session_state.report_testuale = full_text if report_part == "" else report_part
-                    st.success("Scansione completata!")
-                
-            except Exception as e:
-                st.error(f"Errore interno del codice o JSON: {e}")
-
-    if st.session_state.report_testuale != "":
-        with st.expander("📝 Visualizza l'Analisi Dettagliata dell'AI", expanded=True):
-            st.write(st.session_state.report_testuale)
-
-    st.markdown("---")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📊 Dati Acquisiti per la Preventivazione")
-        idx_forn = 0 if st.session_state.dati_bolletta["fornitura"] == "LUCE" else 1
-        idx_uso = 0 if st.session_state.dati_bolletta["destinazione"] == "Usi Domestici" else 1
-        tipo_fornitura = st.radio("Tipologia Fornitura:", ["LUCE", "GAS"], index=idx_forn)
-        tipo_uso = st.radio("Destinazione d'Uso:", ["Usi Domestici", "Altri Usi"], index=idx_uso)
-        st.markdown("---")
-        
-        if tipo_fornitura == "LUCE":
-            st.markdown("**Consumi Rilevati nel Periodo (kWh):**")
-            f1_consumo = st.number_input("Fascia F1:", value=int(st.session_state.dati_bolletta["f1"]))
-            f2_consumo = st.number_input("Fascia F2:", value=int(st.session_state.dati_bolletta["f2"]))
-            f3_consumo = st.number_input("Fascia F3:", value=int(st.session_state.dati_bolletta["f3"]))
-            consumo_totale = f1_consumo + f2_consumo + f3_consumo
-            st.code(f"Consumo Totale: {consumo_totale} kWh")
-            spesa_attuale = st.number_input("Spesa Attuale Vecchio Gestore (€):", value=float(st.session_state.dati_bolletta["spesa_attuale"]))
-            st.markdown("---")
-            st.markdown("**🛠️ Spese Passanti e Imposte:**")
-            c_trasporto = st.number_input("Spesa per il Trasporto (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
-            c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
-            c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
-            c_rai = st.number_input("Canone RAI (€):", value=float(st.session_state.dati_bolletta.get("canone_rai", 0.0)))
-            c_bonus = st.number_input("Bonus Sociale (Valore NEGATIVO) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
-            st.markdown("---")
-            st.markdown("**📈 Indice di Mercato Unico:**")
-            default_pun = st.session_state.listino["pun_au_unico"] if tipo_uso == "Altri Usi" else st.session_state.listino["pun_dom_unico"]
-            pun_valore = st.number_input("PUN (€/kWh):", value=default_pun, format="%.5f")
-            iva_aliquota = 0.22 if tipo_uso == "Altri Usi" else 0.10
-        else:
-            st.markdown("**Consumo Gas Rilevato (Smc):**")
-            consumo_totale = st.number_input("Volume Totale Gas (Smc):", value=int(st.session_state.dati_bolletta["f1"]))
-            f1_consumo = consumo_totale
-            spesa_attuale = st.number_input("Spesa Attuale Vecchio Gestore (€):", value=float(st.session_state.dati_bolletta["spesa_attuale"]))
-            st.markdown("---")
-            st.markdown("**🛠️ Spese Passanti e Imposte:**")
-            c_trasporto = st.number_input("Spesa per il Trasporto (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
-            c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
-            c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
-            c_bonus = st.number_input("Bonus Sociale (Valore NEGATIVO) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
-            c_rai = 0.0
-            st.markdown("---")
-            st.markdown("**📈 Indice di Mercato Unico:**")
-            default_psbil = st.session_state.listino["psbil_au_unico"] if tipo_uso == "Altri Usi" else st.session_state.listino["psbil_dom_unico"]
-            psbil_valore = st.number_input("PSBIL (€/Smc):", value=default_psbil, format="%.4f")
-            iva_aliquota = 0.22
-
-    with col2:
-        st.markdown("### 📊 Risultato della Comparazione Finita")
-        coeff_perdite = 1.102 if tipo_fornitura == "LUCE" else 1.0
-        totale_costi_passanti_invariabili = c_trasporto + c_oneri + c_altre
-        totale_fissa = 0.0
-        totale_variabile = 0.0
-        
-        if tipo_fornitura == "LUCE":
-            if tipo_uso == "Altri Usi":
-                spesa_energia_fix = (f1_consumo * st.session_state.listino["luce_fix_au_f1"] * coeff_perdite) + (f2_consumo * st.session_state.listino["luce_fix_au_f2"] * coeff_perdite) + (f3_consumo * st.session_state.listino["luce_fix_au_f3"] * coeff_perdite)
-                imponibile_fix = spesa_energia_fix + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
-                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
-                
-                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_au_f3"]) * coeff_perdite)
-                imponibile_var = spesa_energia_var + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
-                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
-            else:
-                spesa_energia_fix = (f1_consumo * st.session_state.listino["luce_fix_dom_f1"] * coeff_perdite) + (f2_consumo * st.session_state.listino["luce_fix_dom_f2"] * coeff_perdite) + (f3_consumo * st.session_state.listino["luce_fix_dom_f3"] * coeff_perdite)
-                imponibile_fix = spesa_energia_fix + st.session_state.listino["luce_pcv_dom"] + totale_costi_passanti_invariabili
-                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
-                
-                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f2"]) * coeff_perdite) + (f3_consum
+                    risultato_json = json.
