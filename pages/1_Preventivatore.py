@@ -1,8 +1,9 @@
 import streamlit as st
 import json
 import os
+import requests
 
-# Chiave API cablata direttamente per il funzionamento online
+# Chiave API cablata direttamente
 API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
 
 # ==========================================
@@ -10,22 +11,15 @@ API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
 # ==========================================
 if "listino" not in st.session_state:
     st.session_state.listino = {
-        # LUCE DOMESTICO
         "luce_fix_dom_f1": 0.1485, "luce_fix_dom_f2": 0.1485, "luce_fix_dom_f3": 0.1485,
         "pun_dom_unico": 0.1091,
         "luce_var_dom_f1": 0.0165, "luce_var_dom_f2": 0.0165, "luce_var_dom_f3": 0.0165,
         "luce_pcv_dom": 20.00,
-        
-        # LUCE ALTRI USI
         "luce_fix_au_f1": 0.1298, "luce_fix_au_f2": 0.1148, "luce_fix_au_f3": 0.1058,
         "pun_au_unico": 0.1091,
         "luce_var_au_f1": 0.0150, "luce_var_au_f2": 0.0150, "luce_var_au_f3": 0.0150,
         "luce_pcv_au": 15.00,
-        
-        # GAS DOMESTICO
         "gas_fix_dom": 0.5100, "psbil_dom_unico": 0.4499, "gas_var_dom_spread": 0.0700, "gas_qvd_dom": 18.00,
-        
-        # GAS ALTRI USI
         "gas_fix_au": 0.5500, "psbil_au_unico": 0.4499, "gas_var_au_spread": 0.0650, "gas_qvd_au": 26.00
     }
 
@@ -106,22 +100,27 @@ if uploaded_file is not None:
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         with st.spinner("L'AI sta analizzando i testi..."):
             try:
-                # Corretto l'import rimuovendo il refuso ortografico
-                import google.generativeai as generative_ai
-                
-                generative_ai.configure(api_key=API_KEY_LOCALE)
-                
+                import base64
                 bytes_data = uploaded_file.getvalue()
+                base64_file = base64.b64encode(bytes_data).decode("utf-8")
                 
-                file_part = {
-                    "mime_type": uploaded_file.type,
-                    "data": bytes_data
+                # Chiamata REST diretta alle API di Gemini (Nessun import "google" richiesto)
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY_LOCALE}"
+                headers = {"Content-Type": "application/json"}
+                payload = {
+                    "contents": [{
+                        "parts": [
+                            {"inlineData": {"mimeType": uploaded_file.type, "data": base64_file}},
+                            {"text": st.session_state.prompt_ai}
+                        ]
+                    }]
                 }
                 
-                model = generative_ai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content([file_part, st.session_state.prompt_ai])
+                req_response = requests.post(url, headers=headers, json=payload)
+                res_json = req_response.json()
                 
-                full_text = response.text
+                full_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                
                 if "[JSON_START]" in full_text and "[JSON_END]" in full_text:
                     json_part = full_text.split("[JSON_START]")[-1].split("[JSON_END]")[0].strip()
                     report_part = full_text.split("[JSON_END]")[-1].strip()
@@ -247,4 +246,3 @@ if uploaded_file is not None:
         
         st.markdown(f"<div style='background-color: #064e3b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #10b981; margin-top: 25px;'><span style='color: #a7f3d0; font-size: 13px; font-weight: bold;'>MIGLIOR OPZIONE CONVENIENZA (TIRRENIA {tipo_migliore})</span><br><span style='color: #34d399; font-size: 34px; font-weight: 900;'>€ {miglior_risparmio:.2f} Totali di Risparmio</span></div>", unsafe_allow_html=True)
 else:
-    st.info("📂 Carica una bolletta per attivare l'estrazione intelligente e il motore di calcolo.")
