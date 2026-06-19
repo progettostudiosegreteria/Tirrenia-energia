@@ -1,6 +1,8 @@
 import streamlit as st
 import json
 import os
+import requests
+import base64
 
 # Chiave API inserita direttamente nel codice per l'ambiente online
 API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
@@ -34,7 +36,7 @@ if "prompt_ai" not in st.session_state:
         "Sei un analista esperto di bollette energetiche italiane per lo Studio Lauri e Tirrenia Energia. "
         "Analizza il documento ed estrai con cura sia i consumi sia tutte le componenti di spesa fisse passanti.\n\n"
         "DEVI RESTITUIRMI UN OUTPUT FORMATTATO IN DUE PARTI PRECISE:\n\n"
-        "PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura:\n"
+        "PARTE 1: Un blocco JSON racchiuso entre tag [JSON_START] e [JSON_END] con questa struttura:\n"
         "[JSON_START]\n"
         "{\n"
         "  \"fornitura\": \"LUCE\" o \"GAS\",\n"
@@ -106,36 +108,53 @@ if uploaded_file is not None:
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         with st.spinner("L'AI sta analizzando i testi..."):
             try:
-                # SINTASSI STANDARD DEFINITIVA: Utilizziamo l'SDK ufficiale caricato correttamente
-                import google.generativeai as genai
-                
-                genai.configure(api_key=API_KEY_LOCALE)
-                
                 bytes_data = uploaded_file.getvalue()
+                base64_file = base64.b64encode(bytes_data).decode("utf-8")
                 
-                file_part = {
-                    "mime_type": uploaded_file.type,
-                    "data": bytes_data
+                # 🛠️ SOLUZIONE DEFINITIVA STRUTTURA REST: URL v1 puro senza prefissi 'models/' errati
+                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY_LOCALE}"
+                headers = {"Content-Type": "application/json"}
+                
+                # Payload con la struttura multipart corretta per le chiamate REST dirette
+                payload = {
+                    "contents": [{
+                        "parts": [
+                            {
+                                "inlineData": {
+                                    "mimeType": uploaded_file.type,
+                                    "data": base64_file
+                                }
+                            },
+                            {
+                                "text": st.session_state.prompt_ai
+                            }
+                        ]
+                    }]
                 }
                 
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content([file_part, st.session_state.prompt_ai])
+                req_response = requests.post(url, headers=headers, json=payload)
+                res_json = req_response.json()
                 
-                full_text = response.text
-                if "[JSON_START]" in full_text and "[JSON_END]" in full_text:
-                    json_part = full_text.split("[JSON_START]")[-1].split("[JSON_END]")[0].strip()
-                    report_part = full_text.split("[JSON_END]")[-1].strip()
+                if "error" in res_json:
+                    st.error(f"Errore diretto da Google API: {res_json['error']['message']}")
+                    st.json(res_json["error"])
                 else:
-                    json_part = full_text
-                    report_part = "Report generato direttamente."
-                
-                risultato_json = json.loads(json_part)
-                st.session_state.dati_bolletta.update(risultato_json)
-                st.session_state.report_testuale = full_text if report_part == "" else report_part
-                st.success("Scansione completata!")
+                    full_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                    
+                    if "[JSON_START]" in full_text and "[JSON_END]" in full_text:
+                        json_part = full_text.split("[JSON_START]")[-1].split("[JSON_END]")[0].strip()
+                        report_part = full_text.split("[JSON_END]")[-1].strip()
+                    else:
+                        json_part = full_text
+                        report_part = "Report generato direttamente."
+                    
+                    risultato_json = json.loads(json_part)
+                    st.session_state.dati_bolletta.update(risultato_json)
+                    st.session_state.report_testuale = full_text if report_part == "" else report_part
+                    st.success("Scansione completata!")
                 
             except Exception as e:
-                st.error(f"Errore AI o JSON: {e}")
+                st.error(f"Errore interno del codice o JSON: {e}")
 
     if st.session_state.report_testuale != "":
         with st.expander("📝 Visualizza l'Analisi Dettagliata dell'AI", expanded=True):
@@ -201,4 +220,50 @@ if uploaded_file is not None:
             if tipo_uso == "Altri Usi":
                 spesa_energia_fix = (f1_consumo * st.session_state.listino["luce_fix_au_f1"] * coeff_perdite) + (f2_consumo * st.session_state.listino["luce_fix_au_f2"] * coeff_perdite) + (f3_consumo * st.session_state.listino["luce_fix_au_f3"] * coeff_perdite)
                 imponibile_fix = spesa_energia_fix + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
-                totale_fissa = (imponibile_fix * (1 + iva_aliquota))
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
+                
+                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_au_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_au_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_au_f3"]) * coeff_perdite)
+                imponibile_var = spesa_energia_var + (st.session_state.listino["luce_pcv_au"] * 2) + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
+            else:
+                spesa_energia_fix = (f1_consumo * st.session_state.listino["luce_fix_dom_f1"] * coeff_perdite) + (f2_consumo * st.session_state.listino["luce_fix_dom_f2"] * coeff_perdite) + (f3_consumo * st.session_state.listino["luce_fix_dom_f3"] * coeff_perdite)
+                imponibile_fix = spesa_energia_fix + st.session_state.listino["luce_pcv_dom"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_rai + c_bonus
+                
+                spesa_energia_var = (f1_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f1"]) * coeff_perdite) + (f2_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f2"]) * coeff_perdite) + (f3_consumo * (pun_valore + st.session_state.listino["luce_var_dom_f3"]) * coeff_perdite)
+                imponibile_var = spesa_energia_var + st.session_state.listino["luce_pcv_dom"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_rai + c_bonus
+        else:
+            if tipo_uso == "Altri Usi":
+                spesa_gas_fix = consumo_totale * st.session_state.listino["gas_fix_au"]
+                imponibile_fix = spesa_gas_fix + st.session_state.listino["gas_qvd_au"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_bonus
+                
+                spesa_gas_var = consumo_totale * (psbil_valore + st.session_state.listino["gas_var_au_spread"])
+                imponibile_var = spesa_gas_var + st.session_state.listino["gas_qvd_au"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_bonus
+            else:
+                spesa_gas_fix = consumo_totale * st.session_state.listino["gas_fix_dom"]
+                imponibile_fix = spesa_gas_fix + st.session_state.listino["gas_qvd_dom"] + totale_costi_passanti_invariabili
+                totale_fissa = (imponibile_fix * (1 + iva_aliquota)) + c_bonus
+                
+                spesa_gas_var = consumo_totale * (psbil_valore + st.session_state.listino["gas_var_dom_spread"])
+                imponibile_var = spesa_gas_var + st.session_state.listino["gas_qvd_dom"] + totale_costi_passanti_invariabili
+                totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_bonus
+
+        st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ef4444;'><span style='color: #9ca3af; font-size: 12px;'>VECCHIO GESTORE IN BOLLETTA</span><br><span style='color: #ef4444; font-size: 24px; font-weight: bold;'>€ {spesa_attuale:.2f}</span></div>", unsafe_allow_html=True)
+        
+        b1, b2 = st.columns(2)
+        with b1:
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #f28e2b;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO FISSO</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_fissa:.2f}</span></div>", unsafe_allow_html=True)
+            st.metric("Risparmio Fisso", f"€ {spesa_attuale - totale_fissa:.2f}")
+        with b2:
+            st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #10b981;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO VARIABILE</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_variabile:.2f}</span></div>", unsafe_allow_html=True)
+            st.metric("Risparmio Variabile", f"€ {spesa_attuale - totale_variabile:.2f}")
+
+        miglior_risparmio = max(spesa_attuale - totale_fissa, spesa_attuale - totale_variabile)
+        tipo_migliore = "VARIABILE" if (spesa_attuale - totale_variabile) > (spesa_attuale - totale_fissa) else "FISSO"
+        
+        st.markdown(f"<div style='background-color: #064e3b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #10b981; margin-top: 25px;'><span style='color: #a7f3d0; font-size: 13px; font-weight: bold;'>MIGLIOR OPZIONE CONVENIENZA (TIRRENIA {tipo_migliore})</span><br><span style='color: #34d399; font-size: 34px; font-weight: 900;'>€ {miglior_risparmio:.2f} Totali di Risparmio</span></div>", unsafe_allow_html=True)
+else:
+    st.info("📂 Carica una bolletta per attivare l'estrazione intelligente e il motore di calcolo.")
