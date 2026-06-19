@@ -36,7 +36,7 @@ if "prompt_ai" not in st.session_state:
         "Sei un analista esperto di bollette energetiche italiane per lo Studio Lauri e Tirrenia Energia. "
         "Analizza il documento ed estrai con cura sia i consumi sia tutte le componenti di spesa fisse passanti.\n\n"
         "DEVI RESTITUIRMI UN OUTPUT FORMATTATO IN DUE PARTI PRECISE:\n\n"
-        "PARTE 1: Un blocco JSON racchiuso entre tag [JSON_START] e [JSON_END] con questa struttura:\n"
+        "PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura:\n"
         "[JSON_START]\n"
         "{\n"
         "  \"fornitura\": \"LUCE\" o \"GAS\",\n"
@@ -111,11 +111,10 @@ if uploaded_file is not None:
                 bytes_data = uploaded_file.getvalue()
                 base64_file = base64.b64encode(bytes_data).decode("utf-8")
                 
-                # 🛠️ SOLUZIONE DEFINITIVA STRUTTURA REST: URL v1 puro senza prefissi 'models/' errati
-                url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY_LOCALE}"
+                # 🛠️ STRUTTURA API REST COMPLETA: v1beta unito al percorso completo del modello
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY_LOCALE}"
                 headers = {"Content-Type": "application/json"}
                 
-                # Payload con la struttura multipart corretta per le chiamate REST dirette
                 payload = {
                     "contents": [{
                         "parts": [
