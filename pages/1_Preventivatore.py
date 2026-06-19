@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import os
 
-# Recupero della chiave API cablata direttamente per il funzionamento online su Streamlit Cloud
+# Chiave API cablata direttamente per il funzionamento online
 API_KEY_LOCALE = "AQ.Ab8RN6JMjOFaJq3n0991ViyP2Xt4WDeXjpwiXHX3mMOzr7HYFw"
 
 # ==========================================
@@ -35,13 +35,12 @@ if "listino" not in st.session_state:
         "gas_qvd_au": 26.00
     }
 
-# PROMPT DI ESTRAZIONE AD ALTA PERFORMANCE CON RICHIESTA DI REPORT DETTAGLIATO
 if "prompt_ai" not in st.session_state:
     st.session_state.prompt_ai = (
         "Sei un analista esperto di bollette energetiche italiane per lo Studio Lauri e Tirrenia Energia. "
         "Analizza il documento ed estrai con cura sia i consumi sia tutte le componenti di spesa fisse passanti.\n\n"
         "DEVI RESTITUIRMI UN OUTPUT FORMATTATO IN DUE PARTI PRECISE:\n\n"
-        "PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura (usa solo numeri, no € o kWh):\n"
+        "PARTE 1: Un blocco JSON racchiuso tra tag [JSON_START] e [JSON_END] con questa struttura:\n"
         "[JSON_START]\n"
         "{\n"
         "  \"fornitura\": \"LUCE\" o \"GAS\",\n"
@@ -59,7 +58,7 @@ if "prompt_ai" not in st.session_state:
         "[JSON_END]\n\n"
         "PARTE 2: Una descrizione testuale dettagliata (Report) che riassuma:\n"
         "- Nome del vecchio gestore e periodo di riferimento.\n"
-        "- Come hai individuato le singole voci di spesa fisse passanti (trasporto, oneri, ecc.) e i consumi orari."
+        "- Come hai individuato le singole voci di spesa fisse passanti e i consumi."
     )
 
 if "report_testuale" not in st.session_state:
@@ -80,7 +79,7 @@ admin_pass = st.sidebar.text_input("Inserisci Password:", type="password")
 
 if admin_pass == "lauri2026":
     st.sidebar.success("Accesso Consentito!")
-    st.sidebar.markdown("**Prompt di Istruzione AI (Ottimizzabile):**")
+    st.sidebar.markdown("**Prompt di Istruzione AI:**")
     st.session_state.prompt_ai = st.sidebar.text_area("Modifica le regole di lettura dell'AI:", value=st.session_state.prompt_ai, height=200)
     
     st.sidebar.markdown("---")
@@ -106,9 +105,9 @@ if uploaded_file is not None:
     
     if st.button("🧠 Avvia Lettura Automatica con AI"):
         if API_KEY_LOCALE == "":
-            st.error("⚠️ Chiave API non configurata correttamente nel file.")
+            st.error("⚠️ Chiave API non configurata.")
         else:
-            with st.spinner("L'AI sta analizzando i testi e isolando le spese fisse invariabili..."):
+            with st.spinner("L'AI sta analizzando i testi..."):
                 try:
                     from google import genai
                     client = genai.Client(api_key=API_KEY_LOCALE)
@@ -136,7 +135,7 @@ if uploaded_file is not None:
                     st.success("Scansione completata!")
                     
                 except Exception as e:
-                    st.error(f"Errore di lettura o parsing JSON: {e}")
+                    st.error(f"Errore AI o JSON: {e}")
 
     if st.session_state.report_testuale != "":
         with st.expander("📝 Visualizza l'Analisi Dettagliata dell'AI", expanded=True):
@@ -167,18 +166,17 @@ if uploaded_file is not None:
             spesa_attuale = st.number_input("Spesa Attuale Vecchio Gestore (€):", value=float(st.session_state.dati_bolletta["spesa_attuale"]))
             
             st.markdown("---")
-            st.markdown("**🛠️ Spese Passanti e Imposte (Prelevate pari pari dalla bolletta):**")
+            st.markdown("**🛠️ Spese Passanti e Imposte:**")
             c_trasporto = st.number_input("Spesa per il Trasporto e Gestione Contatore (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
             c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
             c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
             c_rai = st.number_input("Canone RAI (€):", value=float(st.session_state.dati_bolletta.get("canone_rai", 0.0)))
-            c_bonus = st.number_input("Bonus Sociale (Inserisci come valore NEGATIVO se presente) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
+            c_bonus = st.number_input("Bonus Sociale (Valore NEGATIVO) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
             
             st.markdown("---")
             st.markdown("**📈 Indice di Mercato Unico (Mese Precedente):**")
             default_pun = st.session_state.listino["pun_au_unico"] if tipo_uso == "Altri Usi" else st.session_state.listino["pun_dom_unico"]
             pun_valore = st.number_input("PUN (€/kWh):", value=default_pun, format="%.5f")
-            
             iva_aliquota = 0.22 if tipo_uso == "Altri Usi" else 0.10
         else:
             st.markdown("**Consumo Gas Rilevato nel Periodo:**")
@@ -187,24 +185,22 @@ if uploaded_file is not None:
             spesa_attuale = st.number_input("Spesa Attuale Vecchio Gestore (€):", value=float(st.session_state.dati_bolletta["spesa_attuale"]))
             
             st.markdown("---")
-            st.markdown("**🛠️ Spese Passanti e Imposte (Prelevate pari pari dalla bolletta):**")
+            st.markdown("**🛠️ Spese Passanti e Imposte:**")
             c_trasporto = st.number_input("Spesa per il Trasporto e Gestione Contatore (€):", value=float(st.session_state.dati_bolletta.get("spesa_trasporto", 0.0)))
             c_oneri = st.number_input("Spesa per Oneri di Sistema (€):", value=float(st.session_state.dati_bolletta.get("oneri_sistema", 0.0)))
             c_altre = st.number_input("Altre Partite / Ricalcoli (€):", value=float(st.session_state.dati_bolletta.get("altre_partite", 0.0)))
-            c_bonus = st.number_input("Bonus Sociale (Inserisci come valore NEGATIVO se presente) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
+            c_bonus = st.number_input("Bonus Sociale (Valore NEGATIVO) (€):", value=float(st.session_state.dati_bolletta.get("bonus_sociale", 0.0)))
             c_rai = 0.0
             
             st.markdown("---")
             st.markdown("**📈 Indice di Mercato Unico (Mese Precedente):**")
             default_psbil = st.session_state.listino["psbil_au_unico"] if tipo_uso == "Altri Usi" else st.session_state.listino["psbil_dom_unico"]
             psbil_valore = st.number_input("PSBIL (€/Smc):", value=default_psbil, format="%.4f")
-            
-            iva_aliquota = 0.22 if tipo_uso == "Altri Usi" else 0.22
+            iva_aliquota = 0.22
 
     with col2:
         st.markdown("### 📊 Risultato della Comparazione Finita")
         coeff_perdite = 1.102 if tipo_fornitura == "LUCE" else 1.0
-        
         totale_costi_passanti_invariabili = c_trasporto + c_oneri + c_altre
         
         if tipo_fornitura == "LUCE":
@@ -242,9 +238,10 @@ if uploaded_file is not None:
                 imponibile_var = spesa_gas_var + st.session_state.listino["gas_qvd_dom"] + totale_costi_passanti_invariabili
                 totale_variabile = (imponibile_var * (1 + iva_aliquota)) + c_bonus
 
-        # Output grafico di riepilogo
+        # Card del Vecchio Gestore
         st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ef4444;'><span style='color: #9ca3af; font-size: 12px;'>VECCHIO GESTORE IN BOLLETTA</span><br><span style='color: #ef4444; font-size: 24px; font-weight: bold;'>€ {spesa_attuale:.2f}</span></div>", unsafe_allow_html=True)
         
+        # Colonne interne per i risultati paralleli Tirrenia
         b1, b2 = st.columns(2)
         with b1:
             st.markdown(f"<div style='background-color: #111827; padding: 15px; border-radius: 12px; border-left: 5px solid #f28e2b;'><span style='color: #9ca3af; font-size: 11px;'>TIRRENIA PREZZO FISSO</span><br><span style='color: #ffffff; font-size: 20px; font-weight: bold;'>€ {totale_fissa:.2f}</span></div>", unsafe_allow_html=True)
@@ -255,6 +252,7 @@ if uploaded_file is not None:
 
         miglior_risparmio = max(spesa_attuale - totale_fissa, spesa_attuale - totale_variabile)
         tipo_migliore = "VARIABILE" if (spesa_attuale - totale_variabile) > (spesa_attuale - totale_fissa) else "FISSO"
+        
         st.markdown(f"<div style='background-color: #064e3b; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #10b981; margin-top: 25px;'><span style='color: #a7f3d0; font-size: 13px; font-weight: bold;'>MIGLIOR OPZIONE CONVENIENZA (TIRRENIA {tipo_migliore})</span><br><span style='color: #34d399; font-size: 34px; font-weight: 900;'>€ {miglior_risparmio:.2f} Totali di Risparmio</span></div>", unsafe_allow_html=True)
 else:
     st.info("📂 Carica una bolletta per attivare l'estrazione intelligente e il motore di calcolo.")
